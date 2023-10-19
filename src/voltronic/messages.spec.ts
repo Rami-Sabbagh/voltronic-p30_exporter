@@ -56,3 +56,9 @@ test.each([
     const repacked = packMessage(unpacked);
     expect(repacked).toStrictEqual(packed);
 });
+
+test('Strips leading "(" properly', () => {
+    const packed = packMessage('(ACK');
+    const unpacked = unpackMessage(packed);
+    expect(unpacked).toStrictEqual('ACK');
+});
