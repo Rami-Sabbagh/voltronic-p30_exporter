@@ -66,8 +66,8 @@ test.each([
     expect(repacked).toStrictEqual(packed);
 });
 
-test('Strips leading "(" properly', () => {
+test('Leading "(" is not stripped', () => {
     const packed = packMessage('(ACK');
     const unpacked = unpackMessage(packed);
-    expect(unpacked).toStrictEqual('ACK');
+    expect(unpacked).toStrictEqual('(ACK');
 });

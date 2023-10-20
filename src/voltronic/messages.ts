@@ -37,7 +37,5 @@ export function unpackMessage(data: Buffer): string {
             `expected 0x${expected.toString(16)}, ` +
             `got 0x${actual.toString(16)}.`;
 
-    return data.toString('ascii',
-        data.at(0) === 0x28 ? 1 : 0, // '(' character.
-        data.length - 3);
+    return data.toString('ascii', 0, data.length - 3);
 }
