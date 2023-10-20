@@ -27,6 +27,7 @@ export function packMessage(message: string): Buffer {
  */
 export function unpackMessage(data: Buffer): string {
     if (data.at(-1) !== 0x0D) throw 'Missing carriage return.';
+    if (data.length < 4) throw 'Data is too short to contain a message.';
 
     const expected = data.readUInt16BE(data.length - 3);
     const actual = crc16Xmodem(data.subarray(0, data.length - 3));

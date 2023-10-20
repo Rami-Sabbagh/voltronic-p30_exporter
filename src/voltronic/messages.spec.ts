@@ -44,6 +44,15 @@ test('Missing carriage return is rejected', () => {
 });
 
 test.each([
+    ['0D'],
+    ['AC 0D'],
+    ['BE AC 0D'],
+])('[%s] is rejected for being too short', (hex: string) => {
+    const data = Buffer.from(hex.replaceAll(' ', ''), 'hex');
+    expect(() => unpackMessage(data)).toThrow('Data is too short to contain a message.');
+});
+
+test.each([
     ['Hello World!'],
     ['The Little Quick Brown Fox Jumps Over The Lazy Dog.'],
 ])('"%s" packs, unpacks and repacks as expected', (message: string) => {
