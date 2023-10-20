@@ -55,22 +55,16 @@ export class VoltronicProtocol {
      */
     constructor(stream: Duplex, options?: VoltronicProtocolOptions);
 
-    constructor(source: string | Duplex, options: VoltronicProtocolOptions = {}) {
+    constructor(transport: string | Duplex, options: VoltronicProtocolOptions = {}) {
         this.options = Object.setPrototypeOf(options, defaultOptions);
 
         // FIXME: Handle transport failure and create a new protocol instance.
-        this.stream = (typeof source === 'string')
-            ? new SerialPort({ path: source, baudRate: 2400 })
-            : source;
+        this.stream = (typeof transport === 'string')
+            ? new SerialPort({ path: transport, baudRate: 2400 })
+            : transport;
 
         this.stream.pipe(this.parser);
     }
-
-    // TODO: Exclusive command execution using a Mutex.
-    // TODO: Add timeout.
-
-    // TODO: Setup a single time listener for data and errors.
-    // TODO: Auto-retry logic.
 
     async execute(command: string, regex?: RegExp): Promise<string>;
     async execute(command: string, raw: true): Promise<Buffer>;
