@@ -175,3 +175,46 @@ export const deviceFlagsList = [
     'switchOn',
     'dustproofInstalled',
 ];
+
+export enum DeviceMode {
+    /**
+     * Power On Mode
+     */
+    POWER_ON = 'P',
+    /**
+     * Standby Mode
+     */
+    STAND_BY = 'S',
+    /**
+     * Bypass Mode
+     */
+    BYPASS = 'Y',
+    /**
+     * Line Mode
+     */
+    LINE = 'L',
+    /**
+     * Battery Mode
+     */
+    BATTERY = 'B',
+    /**
+     * Battery Test Mode
+     */
+    BATTERY_TEST = 'BT',
+    /**
+     * Fault Mode
+     */
+    FAULT = 'F',
+    /**
+     * Shutdown Mode
+     */
+    SHUTDOWN = 'D',
+    /**
+     * Grid Mode
+     */
+    GRID = 'G',
+    /**
+     * Charge Mode
+     */
+    CHARGE = 'C',
+}
