@@ -5,6 +5,8 @@ const protocol = new VoltronicProtocol('COM4');
 const api = new VoltronicAPI(protocol);
 
 (async () => {
+    console.info('Program started!');
+    
     console.log('Protocol:', await api.queryProtocolId().catch((error) => `${error}`));
     console.log('FW Version:', await api.queryFirmwareVersion().catch((error) => `${error}`));
     console.log('Serial:', await api.querySerialNumber().catch((error) => `${error}`));

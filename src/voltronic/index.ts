@@ -10,7 +10,7 @@ export class VoltronicAPI {
     }
 
     async queryProtocolId(): Promise<string> {
-        return this.protocol.execute('QPI');
+        return this.protocol.execute('QPI', /^\S+$/);
     }
 
     async querySerialNumber(): Promise<string> {
@@ -19,15 +19,15 @@ export class VoltronicAPI {
     }
 
     async queryFirmwareVersion(): Promise<string> {
-        return this.protocol.execute('QVFW');
+        return this.protocol.execute('QVFW', /^VERFW:\d{5}\.\d{2}$/);
     }
 
     async queryModelName(): Promise<string> {
-        return this.protocol.execute('QMN');
+        return this.protocol.execute('QMN', /^\S+$/);
     }
 
     async queryDeviceMode(): Promise<DeviceMode> {
-        const result = await this.protocol.execute('QMOD') as unknown as DeviceMode;
+        const result = await this.protocol.execute('QMOD', /^[A-Z]{1,2}$/) as unknown as DeviceMode;
         if (Object.values(DeviceMode).indexOf(result) === -1)
             throw `Unknown mode (${result})!`;
 
@@ -35,7 +35,7 @@ export class VoltronicAPI {
     }
 
     async queryGeneralStatusParameters(): Promise<GeneralStatusParameters> {
-        const response = await this.protocol.execute('QPIGS');
+        const response = await this.protocol.execute('QPIGS', /^[\d\.]+(?: [\d\.]+){20}$/);
         const entries = response.split(' ').map((rawValue, index) => {
             const key = generalStatusParametersKeys[index];
 

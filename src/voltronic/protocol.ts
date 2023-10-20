@@ -14,12 +14,21 @@ export interface VoltronicProtocolOptions {
      * Milliseconds before giving up on a response arriving.
      */
     timeout?: number,
+    /**
+     * Delay in milliseconds before each retry attempt.
+     * 
+     * Retry is attempted as much number as there in this array.
+     */
+    retryPauses?: number[],
 }
 
-const defaultOptions = {
-    delay: 50,
-    timeout: 2000,
-} satisfies Required<VoltronicProtocolOptions>;
+const defaultOptions: Required<VoltronicProtocolOptions> = {
+    delay: 0,
+    timeout: 1000,
+    retryPauses: [10, 100, 500, 1000, 2000],
+};
+
+const NAK = packMessage('(NAK');
 
 export class VoltronicProtocol {
     protected stream: Duplex;
@@ -27,6 +36,7 @@ export class VoltronicProtocol {
         delimiter: '\r', includeDelimiter: true,
     });
     protected mutex = new Mutex();
+    protected readonly options: Readonly<Required<VoltronicProtocolOptions>>;
 
     /**
      * Open a serial connection with a voltronic device.
@@ -45,12 +55,14 @@ export class VoltronicProtocol {
      */
     constructor(stream: Duplex, options?: VoltronicProtocolOptions);
 
-    constructor(source: string | Duplex, protected readonly options: VoltronicProtocolOptions = {}) {
+    constructor(source: string | Duplex, options: VoltronicProtocolOptions = {}) {
+        this.options = Object.setPrototypeOf(options, defaultOptions);
+
         // FIXME: Handle transport failure and create a new protocol instance.
         this.stream = (typeof source === 'string')
             ? new SerialPort({ path: source, baudRate: 2400 })
             : source;
-        
+
         this.stream.pipe(this.parser);
     }
 
@@ -60,32 +72,50 @@ export class VoltronicProtocol {
     // TODO: Setup a single time listener for data and errors.
     // TODO: Auto-retry logic.
 
-    async execute(command: string): Promise<string>;
+    async execute(command: string, regex?: RegExp): Promise<string>;
     async execute(command: string, raw: true): Promise<Buffer>;
-    async execute(command: string, raw?: boolean): Promise<string | Buffer> {
+    async execute(command: string, option?: boolean | RegExp): Promise<string | Buffer> {
+        const raw = option === true;
+        const regex = option instanceof RegExp ? option : undefined;
+
         return this.mutex.runExclusive(async () => {
-            await delay(this.option('delay'));
+            for (const retryPause of this.options['retryPauses']) {
+                await delay(this.options['delay']);
 
-            // Discard any content in the parser buffer.
-            this.parser.buffer = Buffer.alloc(0);
-            this.stream.write(packMessage(command));
+                try {
+                    // Discard any content in the parser buffer.
+                    this.parser.buffer = Buffer.alloc(0);
+                    this.stream.write(packMessage(command));
 
-            const data = await this.read(this.option('timeout'));
+                    const data = await this.read(this.options['timeout']);
+                    if (data.equals(NAK)) throw 'Negative acknowledgment.';
 
-            if (raw) {
-                const response = unpackMessage(data, true);
-                if (response[0] !== 0x28) throw 'Response missing leading "(".';
-                return response.subarray(1);
-            } else { 
-                const response = unpackMessage(data);
-                if (response[0] !== '(') throw 'Response missing leading "(".';
-                return response.substring(1);
+                    if (raw) {
+                        const response = unpackMessage(data, true);
+                        if (response[0] !== 0x28) throw 'Response missing leading "(".';
+                        return response.subarray(1);
+                    } else {
+                        let response = unpackMessage(data);
+                        if (response[0] !== '(') throw 'Response missing leading "(".';
+                        response = response.substring(1);
+                        if (regex && !regex.test(response)) throw "Response doesn't match the regular expression.";
+                        return response;
+                    }
+
+                } catch (error) {
+                    console.error(`Command (${command}) failed:`, error);
+                    console.error(`Retrying after ${retryPause}ms...`);
+                    await delay(retryPause);
+                }
             }
+
+            throw `Failed after ${this.options['retryPauses'].length + 1} attempts.`;
         });
     }
 
     destroy(): void {
         this.stream.destroy();
+        this.parser.destroy();
     }
 
     protected async read(timeout?: number): Promise<Buffer> {
@@ -113,12 +143,8 @@ export class VoltronicProtocol {
                     reject('Timeout');
                 }, timeout);
 
-            this.parser.once('data', resolve);
-            this.parser.once('error', reject);
+            this.parser.once('data', onData);
+            this.parser.once('error', onError);
         });
-    }
-
-    protected option<T extends keyof VoltronicProtocolOptions>(key: T): Required<VoltronicProtocolOptions>[T] {
-        return this.options[key] ?? defaultOptions[key];
     }
 }
