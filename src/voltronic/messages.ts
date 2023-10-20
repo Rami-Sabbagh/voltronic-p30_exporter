@@ -25,7 +25,9 @@ export function packMessage(message: string): Buffer {
  * 
  * Also removes the first character from the message if it was `(`.
  */
-export function unpackMessage(data: Buffer): string {
+export function unpackMessage(data: Buffer): string;
+export function unpackMessage(data: Buffer, raw: true): Buffer;
+export function unpackMessage(data: Buffer, raw?: true): string | Buffer {
     if (data.at(-1) !== 0x0D) throw 'Missing carriage return.';
     if (data.length < 4) throw 'Data is too short to contain a message.';
 
@@ -36,6 +38,7 @@ export function unpackMessage(data: Buffer): string {
         throw 'Checksum mismatch: ' +
             `expected 0x${expected.toString(16)}, ` +
             `got 0x${actual.toString(16)}.`;
-
+    
+    if (raw) return data.subarray(0, data.length - 3);
     return data.toString('ascii', 0, data.length - 3);
 }

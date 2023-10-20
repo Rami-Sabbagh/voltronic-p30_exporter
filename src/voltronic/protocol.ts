@@ -45,7 +45,9 @@ export class VoltronicProtocol {
     // TODO: Setup a single time listener for data and errors.
     // TODO: Auto-retry logic.
 
-    async execute(command: string): Promise<string> {
+    async execute(command: string): Promise<string>;
+    async execute(command: string, raw: true): Promise<Buffer>;
+    async execute(command: string, raw?: boolean): Promise<string | Buffer> {
         return this.mutex.runExclusive(async () => {
             await delay(1000);
 
@@ -54,12 +56,16 @@ export class VoltronicProtocol {
             this.stream.write(packMessage(command));
 
             const data = await this.read();
-            let response = unpackMessage(data);
 
-            if (response[0] !== '(') throw 'Response missing leading "(".';
-            response = response.substring(1);
-
-            return response;
+            if (raw) {
+                const response = unpackMessage(data, true);
+                if (response[0] !== 0x28) throw 'Response missing leading "(".';
+                return response.subarray(1);
+            } else { 
+                const response = unpackMessage(data);
+                if (response[0] !== '(') throw 'Response missing leading "(".';
+                return response.substring(1);
+            }
         });
     }
 
