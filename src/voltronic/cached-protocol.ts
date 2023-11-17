@@ -16,7 +16,7 @@ export interface VoltronicCachedProtocolOptions {
 }
 
 const defaultOptions: Required<VoltronicCachedProtocolOptions> = {
-    commonTTL: 1_000, // 1 Second.
+    commonTTL: 5_000, // 5 Seconds.
     commandsTTL: {
         'QPI': 10 * 60 * 1_000, // Query Protocol ID   => 10 Minutes.
         'QID': 10 * 60 * 1_000, // Query Serial Number => 10 Minutes.
@@ -26,9 +26,11 @@ const defaultOptions: Required<VoltronicCachedProtocolOptions> = {
 
 export class VoltronicCachedProtocol implements VoltronicProtocol {
     protected readonly options: Readonly<Required<VoltronicCachedProtocolOptions>>;
+    protected mutex = new Mutex();
+
     protected rawCache: Record<string, { data: Buffer, timestamp: number } | undefined> = {};
     protected parsedCache: Record<string, { data: string, timestamp: number } | undefined> = {};
-    protected mutex = new Mutex();
+    protected errorsCache: Record<string, { error: unknown, timestamp: number } | undefined> = {};
 
     constructor(protected baseProtocol: VoltronicProtocol, options: VoltronicCachedProtocolOptions = {}) {
         this.options = Object.setPrototypeOf(options, defaultOptions);
@@ -44,19 +46,28 @@ export class VoltronicCachedProtocol implements VoltronicProtocol {
             const ttl = this.getCommandTTL(command);
             const expiry = Date.now() - ttl;
 
+            const cachedError = this.errorsCache[command];
+            if (cachedError && cachedError.timestamp > expiry)
+                throw cachedError.error;
+            else if (cachedError)
+                delete this.errorsCache[command];
+
             const cached = (raw ? this.rawCache : this.parsedCache)[command];
 
-            if (cached === undefined || cached.timestamp <= expiry) {
-                if (raw) {
-                    const data = await this.baseProtocol.execute(command, true);
-                    this.rawCache[command] = { data, timestamp: Date.now() };
-                    return data;
-
-                } else {
-                    const data = await this.baseProtocol.execute(command, regex);
-                    this.parsedCache[command] = { data, timestamp: Date.now() };
-                    return data;
-
+            if (!cached || cached.timestamp <= expiry) {
+                try {
+                    if (raw) {
+                        const data = await this.baseProtocol.execute(command, true);
+                        this.rawCache[command] = { data, timestamp: Date.now() };
+                        return data;
+                    } else {
+                        const data = await this.baseProtocol.execute(command, regex);
+                        this.parsedCache[command] = { data, timestamp: Date.now() };
+                        return data;
+                    }
+                } catch (error) {
+                    this.errorsCache[command] = { error, timestamp: Date.now() };
+                    throw error;
                 }
 
             } else return cached.data;
