@@ -1,7 +1,6 @@
-import { VoltronicAPI } from './voltronic';
-import { VoltronicProtocol } from './voltronic/protocol';
+import { VoltronicAPI, VoltronicRS232Protocol } from './voltronic';
 
-const protocol = new VoltronicProtocol('COM4');
+const protocol = new VoltronicRS232Protocol('COM4');
 const api = new VoltronicAPI(protocol);
 
 (async () => {

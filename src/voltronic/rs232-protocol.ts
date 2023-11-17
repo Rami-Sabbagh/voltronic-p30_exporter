@@ -4,8 +4,9 @@ import { SerialPort, DelimiterParser } from 'serialport';
 import { Mutex } from 'async-mutex';
 import { packMessage, unpackMessage } from './messages';
 import { delay } from './utilities';
+import { VoltronicProtocol } from './structures';
 
-export interface VoltronicProtocolOptions {
+export interface VoltronicRS232ProtocolOptions {
     /**
      * Milliseconds to wait before sending a command.
      */
@@ -22,7 +23,7 @@ export interface VoltronicProtocolOptions {
     retryPauses?: number[],
 }
 
-const defaultOptions: Required<VoltronicProtocolOptions> = {
+const defaultOptions: Required<VoltronicRS232ProtocolOptions> = {
     delay: 0,
     timeout: 1000,
     retryPauses: [10, 100, 500, 1000, 2000],
@@ -30,13 +31,13 @@ const defaultOptions: Required<VoltronicProtocolOptions> = {
 
 const NAK = packMessage('(NAK');
 
-export class VoltronicProtocol {
+export class VoltronicRS232Protocol implements VoltronicProtocol {
     protected stream: Duplex;
     protected parser = new DelimiterParser({
         delimiter: '\r', includeDelimiter: true,
     });
     protected mutex = new Mutex();
-    protected readonly options: Readonly<Required<VoltronicProtocolOptions>>;
+    protected readonly options: Readonly<Required<VoltronicRS232ProtocolOptions>>;
 
     /**
      * Open a serial connection with a voltronic device.
@@ -47,15 +48,15 @@ export class VoltronicProtocol {
      * @param path The system path of the serial port you want to open.
      * For example, `/dev/tty.XXX` on Mac/Linux, or `COM1` on Windows
      */
-    constructor(path: string, options?: VoltronicProtocolOptions);
+    constructor(path: string, options?: VoltronicRS232ProtocolOptions);
 
     /**
      * Communicate with a voltronic device regardless
      * of the transport used.
      */
-    constructor(stream: Duplex, options?: VoltronicProtocolOptions);
+    constructor(stream: Duplex, options?: VoltronicRS232ProtocolOptions);
 
-    constructor(transport: string | Duplex, options: VoltronicProtocolOptions = {}) {
+    constructor(transport: string | Duplex, options: VoltronicRS232ProtocolOptions = {}) {
         this.options = Object.setPrototypeOf(options, defaultOptions);
 
         // FIXME: Handle transport failure and create a new protocol instance.

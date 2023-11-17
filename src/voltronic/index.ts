@@ -1,8 +1,10 @@
-import { VoltronicProtocol } from './protocol';
-import { DeviceMode, GeneralStatusParameters, deviceFlagsList, deviceStatusFlagsList, generalStatusParametersKeys } from './structures';
+import { VoltronicProtocol } from './structures';
+import { DeviceMode, GeneralStatusParameters, deviceFlagsList, deviceStatusFlagsList, generalStatusParametersKeys } from './data-model';
 import { parseFlags } from './utilities';
 
-export * from './structures';
+export * from './data-model';
+export * from './rs232-protocol';
+export * from './cached-protocol';
 
 export class VoltronicAPI {
     protocol: VoltronicProtocol;
