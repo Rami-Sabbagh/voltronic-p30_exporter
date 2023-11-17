@@ -6,6 +6,8 @@ import { VoltronicRS232Protocol, VoltronicRS232ProtocolOptions } from './rs232';
 import { NoRS232Port } from '../errors';
 
 export interface VoltronicAutoRS232ProtocolOptions {
+    path?: 'auto' | string;
+
     /**
      * Serial devices to exclude when using auto mode (`path = 'auto'`).
      * 
@@ -20,6 +22,7 @@ export interface VoltronicAutoRS232ProtocolOptions {
 }
 
 const defaultOptions: Required<VoltronicAutoRS232ProtocolOptions> = {
+    path: 'auto',
     exclude: [],
     rs232: {},
 };
@@ -29,7 +32,6 @@ export class VoltronicAutoRS232Protocol implements VoltronicProtocol {
     protected protocol?: VoltronicProtocol;
 
     constructor(
-        protected readonly path = 'auto',
         options: Readonly<VoltronicAutoRS232ProtocolOptions> = {},
     ) {
         this.options = Object.setPrototypeOf(options, defaultOptions);
@@ -60,8 +62,8 @@ export class VoltronicAutoRS232Protocol implements VoltronicProtocol {
 
     protected async getDevicePath(): Promise<string> {
         const ports = await SerialPort.list();
-        const exclude = this.path === 'auto' ? this.options.exclude
-            : [({ path }: PortInfo) => path !== this.path];
+        const exclude = this.options.path === 'auto' ? this.options.exclude
+            : [({ path }: PortInfo) => path !== this.options.path];
 
         const port = ports.find(port => !exclude.some(
             predicate => predicate(port)));
