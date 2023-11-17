@@ -1,4 +1,5 @@
 import { crc16Xmodem } from './crc16-xmodem';
+import { ChecksumMismatch, InvalidMessage } from './errors';
 
 /**
  * Packs the message into the transmission ready format of voltronics.
@@ -28,16 +29,14 @@ export function packMessage(message: string): Buffer {
 export function unpackMessage(data: Buffer): string;
 export function unpackMessage(data: Buffer, raw: true): Buffer;
 export function unpackMessage(data: Buffer, raw?: true): string | Buffer {
-    if (data.at(-1) !== 0x0D) throw 'Missing carriage return.';
-    if (data.length < 4) throw 'Data is too short to contain a message.';
+    if (data.at(-1) !== 0x0D) throw new InvalidMessage('Data is too short to contain a message.');
+    if (data.length < 4) throw new InvalidMessage('Data is too short to contain a message.');
 
     const expected = data.readUInt16BE(data.length - 3);
     const actual = crc16Xmodem(data.subarray(0, data.length - 3));
 
     if (expected !== actual)
-        throw 'Checksum mismatch: ' +
-            `expected 0x${expected.toString(16)}, ` +
-            `got 0x${actual.toString(16)}.`;
+        throw new ChecksumMismatch(expected, actual);
     
     if (raw) return data.subarray(0, data.length - 3);
     return data.toString('ascii', 0, data.length - 3);

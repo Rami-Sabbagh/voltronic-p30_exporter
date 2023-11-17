@@ -33,7 +33,7 @@ export class VoltronicAPI {
     async queryDeviceMode(): Promise<DeviceMode> {
         const result = await this.protocol.execute('QMOD', /^[A-Z]{1,2}$/) as unknown as DeviceMode;
         if (Object.values(DeviceMode).indexOf(result) === -1)
-            throw `Unknown mode (${result})!`;
+            throw Error(`Unknown mode (${result})!`);
 
         return result;
     }

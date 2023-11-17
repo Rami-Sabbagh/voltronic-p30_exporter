@@ -5,6 +5,7 @@ import { Mutex } from 'async-mutex';
 import { packMessage, unpackMessage } from '../messages';
 import { delay } from '../utilities';
 import { VoltronicProtocol } from '../structures';
+import { InvalidMessage, NegativeAcknowledgement, TimeoutError, TooManyAttempts, ValidationError } from '../errors';
 
 export interface VoltronicRS232ProtocolOptions {
     /**
@@ -83,17 +84,21 @@ export class VoltronicRS232Protocol implements VoltronicProtocol {
                     this.stream.write(packMessage(command));
 
                     const data = await this.read(this.options['timeout']);
-                    if (data.equals(NAK)) throw 'Negative acknowledgment.';
+                    if (data.equals(NAK)) throw new NegativeAcknowledgement();
 
                     if (raw) {
                         const response = unpackMessage(data, true);
-                        if (response[0] !== 0x28) throw 'Response missing leading "(".';
+                        if (response[0] !== 0x28) throw new InvalidMessage('Response missing leading "(".');
                         return response.subarray(1);
                     } else {
                         let response = unpackMessage(data);
-                        if (response[0] !== '(') throw 'Response missing leading "(".';
+                        if (response[0] !== '(') throw new InvalidMessage(
+                            'Response missing leading "(".');
+
                         response = response.substring(1);
-                        if (regex && !regex.test(response)) throw "Response doesn't match the regular expression.";
+                        if (regex && !regex.test(response)) throw new ValidationError(
+                            "Response doesn't match the regular expression.");
+
                         return response;
                     }
 
@@ -104,7 +109,7 @@ export class VoltronicRS232Protocol implements VoltronicProtocol {
                 }
             }
 
-            throw `Failed after ${this.options['retryPauses'].length + 1} attempts.`;
+            throw new TooManyAttempts(this.options['retryPauses'].length + 1);
         });
     }
 
@@ -135,7 +140,7 @@ export class VoltronicRS232Protocol implements VoltronicProtocol {
                 timeoutId = setTimeout(() => {
                     this.parser.off('data', onData);
                     this.parser.off('error', onError);
-                    reject('Timeout');
+                    reject(new TimeoutError(timeout));
                 }, timeout);
 
             this.parser.once('data', onData);
