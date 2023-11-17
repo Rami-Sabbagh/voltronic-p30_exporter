@@ -4,6 +4,7 @@ import { parseFlags } from './utilities';
 
 export * from './data-model';
 export * from './protocol/rs232';
+export * from './protocol/auto-rs232';
 export * from './protocol/cached';
 
 export class VoltronicAPI {

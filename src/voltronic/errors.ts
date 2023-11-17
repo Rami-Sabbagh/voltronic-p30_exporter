@@ -29,3 +29,8 @@ export class TooManyAttempts extends Error {
     }
 }
 
+export class NoRS232Port extends Error {
+    constructor() {
+        super('No suitable RS232 port.');
+    }
+}
