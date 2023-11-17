@@ -2,6 +2,8 @@ import { VoltronicProtocol } from './protocol';
 import { DeviceMode, GeneralStatusParameters, deviceFlagsList, deviceStatusFlagsList, generalStatusParametersKeys } from './structures';
 import { parseFlags } from './utilities';
 
+export * from './structures';
+
 export class VoltronicAPI {
     protocol: VoltronicProtocol;
 

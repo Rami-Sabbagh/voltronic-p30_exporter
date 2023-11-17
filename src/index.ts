@@ -1,18 +1,32 @@
-import { VoltronicAPI } from './voltronic';
-import { VoltronicProtocol } from './voltronic/protocol';
+import Fastify from 'fastify';
+import { exit } from 'node:process';
+import { register } from './metrics';
 
-const protocol = new VoltronicProtocol('COM4');
-const api = new VoltronicAPI(protocol);
+// -- Configuration -- //
+
+const PORT: number = 4000, HOST: string = '127.0.0.1';
+
+// -- Create HTTP Server -- //
+
+const fastify = Fastify({
+    logger: true,
+});
+
+fastify.get('/metrics', async (_, reply) => {
+    reply.header('Content-Type', register.contentType);
+    reply.send(await register.metrics());
+});
+
+// -- Run HTTP Server -- //
 
 (async () => {
-    console.info('Program started!');
-
-    console.log('Protocol:', await api.queryProtocolId().catch((error) => `ERR: ${error}`));
-    console.log('FW Version:', await api.queryFirmwareVersion().catch((error) => `ERR: ${error}`));
-    console.log('Serial:', await api.querySerialNumber().catch((error) => `ERR: ${error}`));
-    console.log('Model:', await api.queryModelName().catch((error) => `ERR: ${error}`));
-    console.log('Device Mode:', await api.queryDeviceMode().catch((error) => `ERR: ${error}`));
-    console.log('Parameters:', await api.queryGeneralStatusParameters().catch((error) => `ERR: ${error}`));
-
-    protocol.destroy();
-})().catch(console.error).finally(() => protocol.destroy());
+    try {
+        await fastify.listen({ port: PORT, host: HOST });
+    } catch (error) {
+        fastify.log.error(error);
+        exit(1);
+    }
+})().catch((error) => {
+    console.error(error);
+    exit(1);
+});
