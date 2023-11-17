@@ -1,3 +1,4 @@
+import { ChecksumMismatch, InvalidMessage } from './errors';
 import { packMessage, unpackMessage } from './messages';
 
 test.each([
@@ -26,21 +27,21 @@ test('Checksum fails with a missing byte', () => {
     const hex = '50 49 BE AC 0D' // QPI but missing the first byte.
     const data = Buffer.from(hex.replaceAll(' ', ''), 'hex');
     
-    expect(() => unpackMessage(data)).toThrow(/^Checksum mismatch:/g);
+    expect(() => unpackMessage(data)).toThrow(ChecksumMismatch);
 });
 
 test('Checksum fails with a corrupted byte', () => {
     const hex = '51 B9 49 BE AC 0D' // QPI but with P messed up.
     const data = Buffer.from(hex.replaceAll(' ', ''), 'hex');
     
-    expect(() => unpackMessage(data)).toThrow(/^Checksum mismatch:/g);
+    expect(() => unpackMessage(data)).toThrow(ChecksumMismatch);
 });
 
 test('Missing carriage return is rejected', () => {
     const hex = '51 50 49 BE AC' // QPI missing the carriage return.
     const data = Buffer.from(hex.replaceAll(' ', ''), 'hex');
     
-    expect(() => unpackMessage(data)).toThrow('Missing carriage return.');
+    expect(() => unpackMessage(data)).toThrow(new InvalidMessage('Missing carriage return.'));
 });
 
 test.each([
@@ -49,7 +50,7 @@ test.each([
     ['BE AC 0D'],
 ])('[%s] is rejected for being too short', (hex: string) => {
     const data = Buffer.from(hex.replaceAll(' ', ''), 'hex');
-    expect(() => unpackMessage(data)).toThrow('Data is too short to contain a message.');
+    expect(() => unpackMessage(data)).toThrow(new InvalidMessage('Data is too short to contain a message.'));
 });
 
 test.each([

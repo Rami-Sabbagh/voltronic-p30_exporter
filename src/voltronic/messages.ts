@@ -29,7 +29,7 @@ export function packMessage(message: string): Buffer {
 export function unpackMessage(data: Buffer): string;
 export function unpackMessage(data: Buffer, raw: true): Buffer;
 export function unpackMessage(data: Buffer, raw?: true): string | Buffer {
-    if (data.at(-1) !== 0x0D) throw new InvalidMessage('Data is too short to contain a message.');
+    if (data.at(-1) !== 0x0D) throw new InvalidMessage('Missing carriage return.');
     if (data.length < 4) throw new InvalidMessage('Data is too short to contain a message.');
 
     const expected = data.readUInt16BE(data.length - 3);
