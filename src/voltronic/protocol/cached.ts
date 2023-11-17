@@ -1,5 +1,5 @@
 import { Mutex } from 'async-mutex';
-import { VoltronicProtocol } from './structures';
+import { VoltronicProtocol } from '../structures';
 
 export interface VoltronicCachedProtocolOptions {
     /**

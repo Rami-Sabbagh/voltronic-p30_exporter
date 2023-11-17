@@ -3,8 +3,8 @@ import { DeviceMode, GeneralStatusParameters, deviceFlagsList, deviceStatusFlags
 import { parseFlags } from './utilities';
 
 export * from './data-model';
-export * from './rs232-protocol';
-export * from './cached-protocol';
+export * from './protocol/rs232';
+export * from './protocol/cached';
 
 export class VoltronicAPI {
     protocol: VoltronicProtocol;

@@ -2,9 +2,9 @@ import { Duplex } from 'node:stream';
 
 import { SerialPort, DelimiterParser } from 'serialport';
 import { Mutex } from 'async-mutex';
-import { packMessage, unpackMessage } from './messages';
-import { delay } from './utilities';
-import { VoltronicProtocol } from './structures';
+import { packMessage, unpackMessage } from '../messages';
+import { delay } from '../utilities';
+import { VoltronicProtocol } from '../structures';
 
 export interface VoltronicRS232ProtocolOptions {
     /**
