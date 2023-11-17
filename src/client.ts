@@ -1,4 +1,5 @@
-import { VoltronicAPI, VoltronicRS232Protocol } from './voltronic';
+import { VoltronicAPI, VoltronicCachedProtocol, VoltronicRS232Protocol } from './voltronic';
 
-const protocol = new VoltronicRS232Protocol('COM4');
-export const api = new VoltronicAPI(protocol);
+const rs232Protocol = new VoltronicRS232Protocol('COM4');
+const cachedProtocol = new VoltronicCachedProtocol(rs232Protocol);
+export const api = new VoltronicAPI(cachedProtocol);

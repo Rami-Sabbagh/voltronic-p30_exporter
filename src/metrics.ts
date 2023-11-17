@@ -6,8 +6,6 @@ import { DeviceMode } from './voltronic';
 const prefix: string = 'voltronic_';
 export const register = new Registry();
 
-collectDefaultMetrics({ register });
-
 // Device Mode
 {
     new Gauge({
@@ -253,3 +251,5 @@ collectDefaultMetrics({ register });
         },
     });
 }
+
+collectDefaultMetrics({ register });
