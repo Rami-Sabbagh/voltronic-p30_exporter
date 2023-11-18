@@ -16,7 +16,7 @@ After=network.target
 Environment=NODE_ENV='production'
 User=rami
 ExecStart=/bin/env node .
-WorkingDirectory=/home/rami/Documents/voltronic-p30_exporter/
+WorkingDirectory=/home/rami/Services/voltronic-p30_exporter/
 # RestartSec=30
 # Restart=on-failure
 

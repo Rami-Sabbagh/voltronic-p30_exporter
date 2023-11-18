@@ -25,7 +25,7 @@
         {
             "label": "Sync files with Orwell",
             "type": "shell",
-            "command": "rsync -rzvhcP . orwell:~/Documents/voltronic-p30_exporter/ --delete --exclude=node_modules",
+            "command": "rsync -rzvhcP . orwell:~/Services/voltronic-p30_exporter/ --delete --exclude=node_modules",
             "problemMatcher": [],
             "options": {
                 "shell": {
@@ -36,7 +36,7 @@
         {
             "label": "Update dependencies on Orwell",
             "type": "shell",
-            "command": "ssh orwell 'cd ~/Documents/voltronic-p30_exporter/; yarn --prod'"
+            "command": "ssh orwell 'cd ~/Services/voltronic-p30_exporter/; yarn --prod'"
         },
         {
             "label": "Start service on Orwell",
