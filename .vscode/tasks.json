@@ -1,0 +1,63 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false,
+    },
+    "tasks": [
+        {
+            "label": "Build project",
+            "type": "npm",
+            "script": "build",
+            "problemMatcher": "$tsc",
+        },
+        {
+            "label": "Stop service on Orwell",
+            "type": "shell",
+            "command": "ssh orwell 'sudo systemctl stop voltronic'"
+        },
+        {
+            "label": "Sync files with Orwell",
+            "type": "shell",
+            "command": "rsync -rzvhcP . orwell:~/Documents/voltronic-p30_exporter/ --delete --exclude=node_modules",
+            "problemMatcher": [],
+            "options": {
+                "shell": {
+                    "executable": "wsl"
+                }
+            },
+        },
+        {
+            "label": "Update dependencies on Orwell",
+            "type": "shell",
+            "command": "ssh orwell 'cd ~/Documents/voltronic-p30_exporter/; yarn --prod'"
+        },
+        {
+            "label": "Start service on Orwell",
+            "type": "shell",
+            "command": "ssh orwell 'sudo systemctl start voltronic'"
+        },
+        {
+            "label": "Deploy to Orwell",
+            "problemMatcher": [],
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Build project",
+                "Stop service on Orwell",
+                "Sync files with Orwell",
+                "Update dependencies on Orwell",
+                "Start service on Orwell"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ],
+}

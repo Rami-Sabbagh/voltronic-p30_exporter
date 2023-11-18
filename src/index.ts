@@ -4,7 +4,8 @@ import { register } from './metrics';
 
 // -- Configuration -- //
 
-const PORT: number = 4000, HOST: string = '127.0.0.1';
+// FIXME: Use proper configuration.
+const PORT: number = 4210, HOST: string = '0.0.0.0';
 
 // -- Create HTTP Server -- //
 
