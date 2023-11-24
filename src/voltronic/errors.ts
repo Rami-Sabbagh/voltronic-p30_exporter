@@ -1,36 +1,55 @@
+import { metrics } from './metrics';
 
-export class InvalidMessage extends Error { }
+export class VoltronicError extends Error {
+    constructor(
+        public readonly type: string,
+        message: string,
+    ) {
+        super(message);
+        metrics.errors.inc({ type });
+    }
+}
 
-export class ChecksumMismatch extends InvalidMessage {
+export class InvalidMessage extends VoltronicError {
+    constructor(message: string) {
+        super('INVALID', message);
+    }
+}
+
+export class ChecksumMismatch extends VoltronicError {
     constructor(expected: number, actual: number) {
-        super('Checksum mismatched: ' +
+        super('CHECKSUM_MISMATCH', 'Checksum mismatched: ' +
             `expected 0x${expected.toString(16)}, ` +
             `got 0x${actual.toString(16)}.`)
     }
 }
 
-export class NegativeAcknowledgement extends Error {
+export class NegativeAcknowledgement extends VoltronicError {
     constructor() {
-        super('Negative acknowledgment.');
+        super('NAK', 'Negative acknowledgment.');
     }
 }
 
-export class ValidationError extends Error { }
+export class ValidationError extends VoltronicError {
+    constructor(message: string) {
+        super('VALIDATION_FAILURE', message);
+    }
+}
 
-export class TimeoutError extends Error {
+export class TimeoutError extends VoltronicError {
     constructor(public timeout: number) {
-        super(`Timeout after ${timeout}ms.`);
+        super('TIMEOUT', `Timeout after ${timeout}ms.`);
     }
 }
 
-export class TooManyAttempts extends Error {
+export class TooManyAttempts extends VoltronicError {
     constructor(public attempts?: number, message?: string) {
-        super(message ?? `Failed after ${attempts} attempts.`);
+        super('TOO_MANY_ATTEMPTS', message ?? `Failed after ${attempts} attempts.`);
     }
 }
 
-export class NoRS232Port extends Error {
+export class NoRS232Port extends VoltronicError {
     constructor() {
-        super('No suitable RS232 port.');
+        super('NO_RS232_PORT', 'No suitable RS232 port.');
     }
 }

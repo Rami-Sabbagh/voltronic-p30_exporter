@@ -6,6 +6,7 @@ import { packMessage, unpackMessage } from '../messages';
 import { delay } from '../utilities';
 import { VoltronicProtocol } from '../structures';
 import { InvalidMessage, NegativeAcknowledgement, TimeoutError, TooManyAttempts, ValidationError } from '../errors';
+import { metrics } from '../metrics';
 
 export interface VoltronicRS232ProtocolOptions {
     /**
@@ -74,7 +75,12 @@ export class VoltronicRS232Protocol implements VoltronicProtocol {
         const raw = option === true;
         const regex = option instanceof RegExp ? option : undefined;
 
-        return this.mutex.runExclusive(async () => {
+        const endExecuteTimer = metrics.rs232.execute_time.startTimer();
+        const endAcquireTimer = metrics.rs232.execute_acquire.startTimer();
+        
+        const result = await this.mutex.runExclusive(async () => {
+            endAcquireTimer();
+            
             for (const retryPause of this.options['retryPauses']) {
                 await delay(this.options['delay']);
 
@@ -111,6 +117,9 @@ export class VoltronicRS232Protocol implements VoltronicProtocol {
 
             throw new TooManyAttempts(this.options['retryPauses'].length + 1);
         });
+
+        endExecuteTimer();
+        return result;
     }
 
     destroy(): void {

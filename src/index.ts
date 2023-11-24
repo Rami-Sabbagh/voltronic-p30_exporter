@@ -1,6 +1,11 @@
 import Fastify from 'fastify';
 import { exit } from 'node:process';
-import { register } from './metrics';
+
+import { Registry } from 'prom-client';
+import { register as exporterRegister } from './metrics';
+import { register as ioRegister } from './voltronic/metrics';
+
+const register = Registry.merge([exporterRegister, ioRegister]);
 
 // -- Configuration -- //
 
