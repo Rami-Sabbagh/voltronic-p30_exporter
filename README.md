@@ -17,8 +17,8 @@ Environment=NODE_ENV='production'
 User=rami
 ExecStart=/bin/env node .
 WorkingDirectory=/home/rami/Services/voltronic-p30_exporter/
-# RestartSec=30
-# Restart=on-failure
+RestartSec=30
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
