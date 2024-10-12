@@ -1,6 +1,6 @@
 {
   "name": "voltronic-p30_exporter",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Prometheus for Voltronic P30 powered MPPT solar inverter",
   "main": "./dist/index.js",
   "author": "Rami Sabbagh <rami.sab07@gmail.com>",
