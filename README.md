@@ -1,6 +1,12 @@
 
 # voltronic-P30_exporter
 
+## TODO
+
+- [ ] Alert on high-load when PV voltage is low.
+- [ ] Produce system config hash.
+- [ ] Alert when the configuration changes.
+
 ## Service Configuration
 
 ```sh

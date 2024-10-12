@@ -7,7 +7,7 @@ export const metrics = {
     rs232: {
         execute_time: new Gauge({
             name: prefix + 'rs232_execute_seconds',
-            help: 'RS232 execute() time',
+            help: 'RS232 execute() time.',
             registers: [register],
         }),
 
@@ -20,7 +20,7 @@ export const metrics = {
 
     errors: new Counter({
         name: prefix + 'errors_total',
-        help: 'Errors raised (or at least constructed)',
+        help: 'Errors raised (or at least constructed).',
         labelNames: ['type'] as const,
         registers: [register],
     }),
